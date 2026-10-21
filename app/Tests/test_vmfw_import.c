@@ -1049,6 +1049,44 @@ void vmfw_test_import(vmfw_test_t *t) {
         VMFW_T_EQ_U(t, fs.count, 0u, "and nothing was written");
     }
 
+    /* ---------------- product/board identity mismatch ------------------ */
+    VMFW_T_SECTION(t, "import/board mismatch");
+    {
+        static ipsw_t mismatched;
+        ipsw_spec_t spec = k_reference_spec;
+        spec.product_type = "iPhone1,2";
+        spec.platform = "s5l8900x";
+        spec.board = "n81ap"; /* iPod4,1 board, not iPhone1,2's N82AP */
+        spec.build = "7E18";
+        VMFW_T_CHECK(t, build_ipsw(&mismatched, &spec), "built");
+ 
+        memset(&fs, 0, sizeof fs);
+        vm_fw_files_t files = { mem_open, mem_write, mem_pread, mem_close, &fs };
+        static fx_blob_t blob;
+        blob.data = mismatched.archive;
+        blob.len = mismatched.len;
+        blob.fail_next = false;
+        vm_fw_import_t imp;
+        memset(&imp, 0, sizeof imp);
+        imp.pread = fx_blob_pread;
+        imp.pread_ctx = &blob;
+        imp.size = mismatched.len;
+        imp.files = &files;
+
+        vm_fw_report_t rep;
+        VMFW_T_EQ_U(t, vm_fw_import_run(&imp, &rep),
+                    VM_FW_ERR_UNSUPPORTED_DEVICE,
+                    "known product with a different board is refused");
+        VMFW_T_EQ_STR(t, rep.product_type, "iPhone1,2",
+                      "product identity remains visible");
+        VMFW_T_EQ_STR(t, rep.board, "n81ap",
+                      "mismatched board remains visible");
+        VMFW_T_CHECK(t, strstr(rep.detail, "board-mismatch") != NULL,
+                     "report explains the identity mismatch");
+        VMFW_T_EQ_U(t, fs.count, 0u,
+                    "no firmware artefact is written for a mismatched board");
+    }
+
     /* ---------------- archives that are not IPSWs ---------------------- */
     VMFW_T_SECTION(t, "import/not an ipsw");
     {
