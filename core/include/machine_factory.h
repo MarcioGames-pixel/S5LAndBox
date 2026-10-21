@@ -21,6 +21,7 @@ typedef enum {
     S5L_MACHINE_SELECT_OK = 0,
     S5L_MACHINE_SELECT_INVALID_ARGUMENT,
     S5L_MACHINE_SELECT_UNKNOWN_DEVICE,
+    S5L_MACHINE_SELECT_BOARD_MISMATCH,
     S5L_MACHINE_SELECT_UNIMPLEMENTED_SOC,
     S5L_MACHINE_SELECT_MACHINE_INIT_FAILED
 } s5l_machine_select_status_t;
@@ -34,6 +35,17 @@ s5l_machine_select_status_t
 s5l_machine_select_profile(const char *identifier,
                            const s5l_device_profile_t **out_profile);
 
+/*
+ * Resolve a firmware manifest identity. ProductType must be a known hardware
+ * identifier and BoardConfig must match its board ID (ASCII case-insensitive,
+ * as Restore.plist commonly stores lower-case board names). A mismatch is
+ * rejected before any machine state or guest RAM is touched.
+ */
+s5l_machine_select_status_t
+s5l_machine_select_firmware_profile(const char *identifier,
+                                    const char *board_id,
+                                    const s5l_device_profile_t **out_profile);
+
 const char *s5l_machine_select_status_name(s5l_machine_select_status_t status);
 
 /* Resolve the identifier and initialize its implemented machine backend.
@@ -42,6 +54,14 @@ s5l_machine_select_status_t
 s5l_machine_init_for_device(const char *identifier, s5l8900_t *machine,
                             uint32_t ram_base, uint32_t ram_size,
                             const s5l_device_profile_t **out_profile);
+
+/* Firmware-aware counterpart: validates ProductType AND BoardConfig before
+ * calling the S5L8900 initializer. */
+s5l_machine_select_status_t
+s5l_machine_init_for_firmware(const char *identifier, const char *board_id,
+                              s5l8900_t *machine, uint32_t ram_base,
+                              uint32_t ram_size,
+                              const s5l_device_profile_t **out_profile);
 
 #ifdef __cplusplus
 }
