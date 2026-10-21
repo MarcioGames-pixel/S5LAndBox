@@ -2069,7 +2069,7 @@ static void engine_thread_main(engine_t *e)
         pthread_mutex_unlock(&e->lock);
         return;
     }
-    if (!s5l8900_init(machine, VM_GUEST_RAM_BASE, VM_GUEST_RAM_SIZE)) {
+    if (!engine_init_selected_machine(machine)) {
         free(machine);
         pthread_mutex_lock(&e->lock);
         snprintf(e->note, sizeof e->note,
