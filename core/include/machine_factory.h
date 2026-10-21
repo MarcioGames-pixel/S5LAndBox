@@ -10,6 +10,7 @@
 #ifndef S5LBOX_MACHINE_FACTORY_H
 #define S5LBOX_MACHINE_FACTORY_H
 
+#include "soc.h"
 #include "device_profile.h"
 
 #ifdef __cplusplus
@@ -20,7 +21,8 @@ typedef enum {
     S5L_MACHINE_SELECT_OK = 0,
     S5L_MACHINE_SELECT_INVALID_ARGUMENT,
     S5L_MACHINE_SELECT_UNKNOWN_DEVICE,
-    S5L_MACHINE_SELECT_UNIMPLEMENTED_SOC
+    S5L_MACHINE_SELECT_UNIMPLEMENTED_SOC,
+    S5L_MACHINE_SELECT_MACHINE_INIT_FAILED
 } s5l_machine_select_status_t;
 
 /*
@@ -33,6 +35,13 @@ s5l_machine_select_profile(const char *identifier,
                            const s5l_device_profile_t **out_profile);
 
 const char *s5l_machine_select_status_name(s5l_machine_select_status_t status);
+
+/* Resolve the identifier and initialize its implemented machine backend.
+ * The output profile is optional; on any failure it is set to NULL. */
+s5l_machine_select_status_t
+s5l_machine_init_for_device(const char *identifier, s5l8900_t *machine,
+                            uint32_t ram_base, uint32_t ram_size,
+                            const s5l_device_profile_t **out_profile);
 
 #ifdef __cplusplus
 }
