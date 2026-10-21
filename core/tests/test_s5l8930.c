@@ -55,6 +55,8 @@ int main(void)
     assert(s5l8930_read32(&soc, S5L8930_DRAM_BASE + sizeof dram - 2u, &w) ==
            S5L8930_ACCESS_UNMAPPED);
     assert(s5l8930_read8(&soc, 0x20000000u, &b) == S5L8930_ACCESS_UNMAPPED);
+    assert(s5l8930_read32(&soc, UINT32_MAX - 1u, &w) ==
+           S5L8930_ACCESS_UNMAPPED);
     assert(s5l8930_write32(&soc, S5L8930_DRAM_BASE + 1u, 0x12345678u) ==
            S5L8930_ACCESS_OK);
 
