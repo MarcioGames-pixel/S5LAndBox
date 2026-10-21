@@ -76,3 +76,13 @@ the selection outcomes and invalid initialization arguments.
 - It does not change the current emulator engine or UI selection flow.
 - A successful build or profile lookup is not evidence of an iPod boot.
 - No Apple firmware, keys, or copyrighted system files are added to the repo.
+
+
+### Explicit S5L8930 scaffold selection
+
+The machine factory now exposes `s5l_machine_init_s5l8930_scaffold_for_device()`
+and a firmware-aware counterpart. These APIs initialize the separate A4 platform
+state for a matching S5L8930/ARMv7 profile and validate the board ID when
+firmware identity is supplied. They do not change the existing S5L8900 dispatch,
+do not allocate guest RAM, and do not mark the profile bootable. They are an
+integration seam for subsequent CPU/bus work, not an iOS boot implementation.
