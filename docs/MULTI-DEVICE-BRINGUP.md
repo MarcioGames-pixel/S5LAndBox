@@ -26,9 +26,11 @@ The core now also has an explicit machine-selection boundary in
 `core/include/machine_factory.h` and `core/src/soc/machine_factory.c`.
 Callers can resolve a selected identifier before constructing a machine; the
 API distinguishes invalid input, unknown devices, and known profiles whose SoC
-backend is not implemented. It returns no profile on any refusal, and does not
-allocate a machine or alter guest memory. Its CTest target covers all three
-outcomes and the supported iPhone 3G selection.
+backend is not implemented. The `s5l_machine_init_for_device()` entry point now
+performs that gate and invokes `s5l8900_init()` only for a supported profile,
+so a frontend can no longer accidentally send an iPod A4 target through the
+S5L8900 initializer. It returns no profile on refusal. The CTest target covers
+the selection outcomes and invalid initialization arguments.
 
 ## Implementation sequence
 
