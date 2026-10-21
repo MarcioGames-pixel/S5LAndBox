@@ -19,6 +19,12 @@ int main(void)
     assert(iphone->logical_width == 320u && iphone->logical_height == 480u);
     assert(s5l_device_profile_can_boot(iphone));
 
+    /* SoC identity alone is insufficient: the current execution/bring-up
+     * implementation is ARMv6-only and must not accept an ARMv7 profile. */
+    s5l_device_profile_t armv7_on_s5l8900 = *iphone;
+    armv7_on_s5l8900.cpu = S5L_CPU_ARMV7;
+    assert(!s5l_device_profile_can_boot(&armv7_on_s5l8900));
+
     const s5l_device_profile_t *ipod = s5l_device_profile_find("iPod4,1");
     assert(ipod != NULL);
     assert(strcmp(ipod->board_id, "N81AP") == 0);
