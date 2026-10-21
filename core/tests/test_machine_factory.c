@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stddef.h>
 
 int main(void)
 {
@@ -27,6 +28,8 @@ int main(void)
     assert(profile == NULL);
     assert(s5l_machine_select_profile("iPhone1,2", NULL) ==
            S5L_MACHINE_SELECT_INVALID_ARGUMENT);
+    assert(s5l_machine_init_for_device("iPod4,1", NULL, 0x08000000u, 0x08000000u, &profile) == S5L_MACHINE_SELECT_INVALID_ARGUMENT);
+    assert(profile == NULL);
     assert(strcmp(s5l_machine_select_status_name(
                       S5L_MACHINE_SELECT_UNIMPLEMENTED_SOC),
                   "unimplemented-soc") == 0);
