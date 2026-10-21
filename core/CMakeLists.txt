@@ -56,6 +56,7 @@ add_library(emucore STATIC
     src/soc/storage.c
     src/soc/machine.c
     src/soc/device_profile.c
+    src/soc/display_profile.c
     src/soc/machine_factory.c
     src/firmware/img3.c
     src/firmware/aes.c
@@ -253,6 +254,11 @@ add_test(NAME s5l8900_machine COMMAND test_soc)
 add_executable(test_device_profile tests/test_device_profile.c)
 target_link_libraries(test_device_profile PRIVATE emucore)
 add_test(NAME device_profile_catalog COMMAND test_device_profile)
+
+# Logical guest pixels map to physical panel pixels without changing guest scanout.
+add_executable(test_display_profile tests/test_display_profile.c)
+target_link_libraries(test_display_profile PRIVATE emucore)
+add_test(NAME display_profile_mapping COMMAND test_display_profile)
 
 add_executable(test_machine_factory tests/test_machine_factory.c)
 target_link_libraries(test_machine_factory PRIVATE emucore)
