@@ -1,4 +1,5 @@
 #include "machine_factory.h"
+#include "s5l8930.h"
 
 #include <assert.h>
 #include <string.h>
@@ -88,6 +89,33 @@ int main(void)
     assert(profile == NULL);
     assert(machine_bytes[0] == 0xa5);
     assert(machine_bytes[sizeof untouched_machine - 1u] == 0xa5);
+
+    /* The experimental scaffold can now be initialized explicitly without
+     * routing iPod4,1 into the S5L8900 machine or claiming it can boot iOS. */
+    s5l8930_t a4;
+    memset(&a4, 0x5a, sizeof a4);
+    profile = NULL;
+    assert(s5l_machine_init_s5l8930_scaffold_for_device(
+               "iPod4,1", &a4, S5L8930_DRAM_BASE, 0x08000000u,
+               &profile) == S5L_MACHINE_SELECT_OK);
+    assert(profile != NULL && strcmp(profile->identifier, "iPod4,1") == 0);
+    assert(a4.initialized);
+    assert(a4.dram_base == S5L8930_DRAM_BASE);
+    assert(a4.dram_size == 0x08000000u);
+
+    profile = (const s5l_device_profile_t *)1;
+    assert(s5l_machine_init_s5l8930_scaffold_for_firmware(
+               "iPod4,1", "N82AP", &a4, S5L8930_DRAM_BASE,
+               0x08000000u, &profile) ==
+           S5L_MACHINE_SELECT_BOARD_MISMATCH);
+    assert(profile == NULL);
+
+    profile = NULL;
+    assert(s5l_machine_init_s5l8930_scaffold_for_firmware(
+               "iPod4,1", "n81ap", &a4, S5L8930_DRAM_BASE,
+               0u, &profile) ==
+           S5L_MACHINE_SELECT_MACHINE_INIT_FAILED);
+    assert(profile == NULL);
 
     assert(strcmp(s5l_machine_select_status_name(
                       S5L_MACHINE_SELECT_UNIMPLEMENTED_SOC),
