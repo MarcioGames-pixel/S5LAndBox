@@ -174,6 +174,7 @@ const char *s5l_bringup_status_name(s5l_bringup_status_t status) {
     switch (status) {
     case S5L_BRINGUP_OK:                        return "ok";
     case S5L_BRINGUP_INVALID_ARGUMENT:          return "invalid-argument";
+    case S5L_BRINGUP_DEVICE_UNSUPPORTED:         return "device-unsupported";
     case S5L_BRINGUP_KERNEL_MISSING:            return "kernel-missing";
     case S5L_BRINGUP_KERNEL_MALFORMED:          return "kernel-malformed";
     case S5L_BRINGUP_KERNEL_NOT_EXECUTABLE:     return "kernel-not-executable";
@@ -500,7 +501,25 @@ s5l_bringup_status_t s5l_bringup(s5l8900_t *machine,
     if (!result) return S5L_BRINGUP_INVALID_ARGUMENT;
     result_reset(result);
 
-    if (!machine || !request || !machine->ram)
+    if (!request)
+        return result_fail(result, S5L_BRINGUP_INVALID_ARGUMENT,
+                           S5L_BRINGUP_STAGE_ARGUMENTS,
+                           "no request");
+
+    /* This entry point is specifically the measured S5L8900/ARMv6 boot path.
+     * Fail closed for an explicitly selected target whose SoC is not modeled;
+     * otherwise an iPod4,1 profile could be mistaken for a bootable iPhone. */
+    if (request->device_identifier && request->device_identifier[0]) {
+        const s5l_device_profile_t *profile =
+            s5l_device_profile_find(request->device_identifier);
+        if (!profile || !s5l_device_profile_can_boot(profile))
+            return result_fail(result, S5L_BRINGUP_DEVICE_UNSUPPORTED,
+                               S5L_BRINGUP_STAGE_ARGUMENTS,
+                               "target '%s' has no implemented boot path",
+                               request->device_identifier);
+    }
+
+    if (!machine || !machine->ram)
         return result_fail(result, S5L_BRINGUP_INVALID_ARGUMENT,
                            S5L_BRINGUP_STAGE_ARGUMENTS,
                            "no machine or no request");
