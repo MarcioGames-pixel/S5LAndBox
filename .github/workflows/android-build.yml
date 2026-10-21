@@ -26,8 +26,6 @@ on:
       - android-port
     paths:
       - 'android/**'
-      - 'core/**'
-      - 'app/Sources/**'
       - 'tools/**'
       - 'CMakeLists.txt'
       - '.github/workflows/android-build.yml'
