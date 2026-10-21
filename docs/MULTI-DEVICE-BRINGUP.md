@@ -98,3 +98,10 @@ reset wiring. Unmapped or unbacked reads currently return zero through the
 existing ARM bus callback contract; bus fault reporting and real A4 peripheral
 models are not yet implemented. This is a CPU/bus integration seam, not proof
 that the iPod touch 4 boot chain works. Memory addresses remain provisional.
+
+
+The S5L8930 machine integration test now also places a single ARM instruction
+(`MOV r0, #42`) in the attached ROM buffer and checks that `arm_step()` fetches
+and executes it through the machine bus. This validates the basic CPU-to-ROM
+path only; it does not validate real A4 reset vectors, privileged startup state,
+MMIO, or iOS boot.
