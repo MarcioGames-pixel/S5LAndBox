@@ -5564,6 +5564,16 @@ static void test_movw_movt_are_armv7_only(void) {
         CHECK(c.r[3] == 0x0000beefu,
               "Cortex-A8 MOVW result %08x expected 0000beef", c.r[3]);
 
+        /* MOVT must preserve the low halfword on Cortex-A8 as well. */
+        m_w32(NULL, 0, movt);
+        arm_reset(&c, &g_bus);
+        c.arch = ARM_ARCH_V7_CORTEX_A8;
+        c.cpsr = (c.cpsr & ~0x1fu) | ARM_MODE_SYS;
+        c.r[3] = 0x0000beefu;
+        CHECK(arm_step(&c) == ARM_OK, "Cortex-A8 must support MOVT");
+        CHECK(c.r[3] == 0xdeadbeefu,
+              "Cortex-A8 MOVT result %08x expected deadbeef", c.r[3]);
+
         memset(g_ram, 0, sizeof g_ram);
         m_w32(NULL, 0, 0xe712f011u); /* SDIV r2, r1, r1 */
         arm_reset(&c, &g_bus);
@@ -5572,6 +5582,15 @@ static void test_movw_movt_are_armv7_only(void) {
         c.r[1] = 7;
         CHECK(arm_step(&c) == ARM_UNDEFINED,
               "Cortex-A8 must not inherit Swift-only SDIV support");
+
+        memset(g_ram, 0, sizeof g_ram);
+        m_w32(NULL, 0, 0xe732f011u); /* UDIV r2, r1, r1 */
+        arm_reset(&c, &g_bus);
+        c.arch = ARM_ARCH_V7_CORTEX_A8;
+        c.cpsr = (c.cpsr & ~0x1fu) | ARM_MODE_SYS;
+        c.r[1] = 7;
+        CHECK(arm_step(&c) == ARM_UNDEFINED,
+              "Cortex-A8 must not inherit Swift-only UDIV support");
     }
 
     /* Neither form writes flags, and Rd == PC is UNPREDICTABLE. */
