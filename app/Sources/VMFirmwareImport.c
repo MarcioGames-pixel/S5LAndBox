@@ -1195,7 +1195,9 @@ vm_fw_status_t vm_fw_import_run(const vm_fw_import_t *cfg,
                                             report->board,
                                             &manifest_profile);
     if (identity_status == S5L_MACHINE_SELECT_BOARD_MISMATCH ||
-        identity_status == S5L_MACHINE_SELECT_UNIMPLEMENTED_SOC) {
+        identity_status == S5L_MACHINE_SELECT_UNIMPLEMENTED_SOC ||
+        (identity_status == S5L_MACHINE_SELECT_INVALID_ARGUMENT &&
+         s5l_device_profile_find(report->product_type) != NULL)) {
         report->status = VM_FW_ERR_UNSUPPORTED_DEVICE;
         snprintf(report->detail, sizeof report->detail,
                  "Firmware identity rejected: product %s, board %s (%s).",
