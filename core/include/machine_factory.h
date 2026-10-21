@@ -1,0 +1,40 @@
+/*
+ * S5LAndBox — explicit device-to-machine dispatch.
+ *
+ * The dispatcher is intentionally fail-closed: a device profile is not proof
+ * that its SoC is implemented. Never construct an S5L8900 machine for an A4
+ * target merely because both products run ARM-family code.
+ *
+ * Copyright (c) 2026 MarcioGames-pixel. MIT licensed.
+ */
+#ifndef S5LBOX_MACHINE_FACTORY_H
+#define S5LBOX_MACHINE_FACTORY_H
+
+#include "device_profile.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum {
+    S5L_MACHINE_SELECT_OK = 0,
+    S5L_MACHINE_SELECT_INVALID_ARGUMENT,
+    S5L_MACHINE_SELECT_UNKNOWN_DEVICE,
+    S5L_MACHINE_SELECT_UNIMPLEMENTED_SOC
+} s5l_machine_select_status_t;
+
+/*
+ * Resolve an explicit Apple hardware identifier to a profile that this tree
+ * can actually boot. On failure, *out_profile is set to NULL. This API does
+ * not allocate a machine or modify guest RAM.
+ */
+s5l_machine_select_status_t
+s5l_machine_select_profile(const char *identifier,
+                           const s5l_device_profile_t **out_profile);
+
+const char *s5l_machine_select_status_name(s5l_machine_select_status_t status);
+
+#ifdef __cplusplus
+}
+#endif
+#endif
