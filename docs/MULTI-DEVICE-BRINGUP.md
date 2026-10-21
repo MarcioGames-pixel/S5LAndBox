@@ -44,7 +44,9 @@ the selection outcomes and invalid initialization arguments.
    physical panel dimensions and keep the existing 320×480 iPhone path unchanged.
    The first host-side mapping helper is now in `display_profile.h/.c`: it maps
    an in-bounds logical pixel to the corresponding top-left physical panel pixel
-   using 64-bit intermediate arithmetic. Tests cover 1× iPhone 3G, 2× iPod touch
+   using 64-bit intermediate arithmetic. A reverse mapping now converts physical
+   touch coordinates back into logical guest coordinates, including the 2×
+   iPod touch 4 panel. Tests cover both directions, 1× iPhone 3G, 2× iPod touch
    4, and invalid coordinates. This does not change guest CLCD scanout or claim
    that the A4 display controller is emulated.
 4. **SoC boundary** — isolate machine creation, MMIO map, interrupt controller,
