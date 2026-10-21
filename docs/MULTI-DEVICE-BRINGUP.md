@@ -22,6 +22,14 @@ is rejected too. Regression tests cover the supported iPhone identity, the
 unsupported iPod identity, an unknown identifier, and the mismatched CPU family. A null identifier preserves the existing
 legacy callers while the Android UI is migrated to explicit target selection.
 
+The core now also has an explicit machine-selection boundary in
+`core/include/machine_factory.h` and `core/src/soc/machine_factory.c`.
+Callers can resolve a selected identifier before constructing a machine; the
+API distinguishes invalid input, unknown devices, and known profiles whose SoC
+backend is not implemented. It returns no profile on any refusal, and does not
+allocate a machine or alter guest memory. Its CTest target covers all three
+outcomes and the supported iPhone 3G selection.
+
 ## Implementation sequence
 
 1. **Profile registry and boot guard** — catalog the targets and reject an
