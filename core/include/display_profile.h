@@ -26,6 +26,15 @@ bool s5l_display_map_logical_pixel(const s5l_device_profile_t *profile,
                                    uint32_t logical_x, uint32_t logical_y,
                                    uint32_t *pixel_x, uint32_t *pixel_y);
 
+/*
+ * Convert a physical panel coordinate back to its logical guest coordinate.
+ * Physical coordinates must be in bounds; output pointers are unchanged on
+ * failure. This is intended for mapping touch input back to the guest UI.
+ */
+bool s5l_display_map_physical_pixel(const s5l_device_profile_t *profile,
+                                    uint32_t pixel_x, uint32_t pixel_y,
+                                    uint32_t *logical_x, uint32_t *logical_y);
+
 #ifdef __cplusplus
 }
 #endif
