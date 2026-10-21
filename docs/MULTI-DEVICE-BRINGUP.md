@@ -86,3 +86,15 @@ state for a matching S5L8930/ARMv7 profile and validate the board ID when
 firmware identity is supplied. They do not change the existing S5L8900 dispatch,
 do not allocate guest RAM, and do not mark the profile bootable. They are an
 integration seam for subsequent CPU/bus work, not an iOS boot implementation.
+
+
+### Experimental S5L8930 CPU-to-memory bus seam
+
+`s5l8930_machine_t` now owns the experimental S5L8930 platform state, ARM CPU
+state, and `arm_bus_t` callbacks. Initialization attaches caller-owned DRAM
+and optional read-only boot-ROM bytes, then resets the CPU and selects the
+Cortex-A8 architecture mode. The integration test checks bus reads/writes and
+reset wiring. Unmapped or unbacked reads currently return zero through the
+existing ARM bus callback contract; bus fault reporting and real A4 peripheral
+models are not yet implemented. This is a CPU/bus integration seam, not proof
+that the iPod touch 4 boot chain works. Memory addresses remain provisional.
