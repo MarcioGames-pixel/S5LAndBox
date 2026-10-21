@@ -1114,7 +1114,8 @@ static arm_status_t exec_data_processing(arm_cpu_t *c, uint32_t pc, uint32_t ins
      * MOVW zero-extends the 16-bit immediate; MOVT replaces only the top half
      * and must leave the bottom half of Rd untouched. Neither sets flags.
      */
-    if (c->arch >= ARM_ARCH_V7_SWIFT &&
+    if ((c->arch == ARM_ARCH_V7_SWIFT ||
+         c->arch == ARM_ARCH_V7_CORTEX_A8) &&
         ((insn & 0x0fb00000u) == 0x03000000u)) {
         uint32_t imm16 = ((insn >> 4) & 0xf000u) | (insn & 0x0fffu);
         bool top = (insn >> 22) & 1u;
@@ -1933,7 +1934,7 @@ static arm_status_t exec_media(arm_cpu_t *c, uint32_t pc, uint32_t insn) {
         bool is_unsigned = (insn >> 21) & 1u;
         uint32_t n, m;
 
-        if (c->arch < ARM_ARCH_V7_SWIFT) return ARM_UNDEFINED;
+        if (c->arch != ARM_ARCH_V7_SWIFT) return ARM_UNDEFINED;
         /* ARM ARM DDI0406C A8-352/A8-868: any of Rd, Rn, Rm == PC is
          * UNPREDICTABLE. Refuse rather than read the pipelined PC. */
         if (rd == 15u || rn == 15u || rm == 15u) return ARM_UNDEFINED;
