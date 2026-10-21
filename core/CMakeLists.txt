@@ -55,6 +55,7 @@ add_library(emucore STATIC
     src/soc/nand.c
     src/soc/storage.c
     src/soc/machine.c
+    src/soc/device_profile.c
     src/firmware/img3.c
     src/firmware/aes.c
     src/firmware/loader.c
@@ -246,6 +247,11 @@ add_test(NAME vfp COMMAND test_vfp)
 add_executable(test_soc tests/test_soc.c)
 target_link_libraries(test_soc PRIVATE emucore)
 add_test(NAME s5l8900_machine COMMAND test_soc)
+
+# Device identity catalog is metadata only; it must never imply that an SoC boots.
+add_executable(test_device_profile tests/test_device_profile.c)
+target_link_libraries(test_device_profile PRIVATE emucore)
+add_test(NAME device_profile_catalog COMMAND test_device_profile)
 
 add_executable(test_usbotg tests/test_usbotg.c)
 target_link_libraries(test_usbotg PRIVATE emucore)
