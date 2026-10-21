@@ -53,7 +53,12 @@ the selection outcomes and invalid initialization arguments.
    clocks, RAM layout, and boot-ROM expectations behind a SoC-specific interface.
 5. **S5L8930/A4 implementation** — add the ARMv7 CPU/system-control behavior and
    the A4 peripheral map required by actual iPod4,1 firmware. Reuse devices only
-   after register-level compatibility is demonstrated.
+   after register-level compatibility is demonstrated. As CPU groundwork, the
+   interpreter now distinguishes the existing ARM1176, the Apple A4's Cortex-A8,
+   and the later Swift core without changing Swift's existing enum value. MOVW/
+   MOVT are enabled for Cortex-A8, while SDIV/UDIV remain unavailable there (the
+   A4 Cortex-A8 does not implement those divide instructions). Focused regression
+   tests guard this distinction; this is not yet a complete ARMv7/Thumb-2 core.
 6. **Boot milestones and CI** — add deterministic tests for firmware identity,
    CPU reset state, memory map, interrupt delivery, display output, and finally
    a captured boot-to-SpringBoard test using legally obtained firmware supplied
