@@ -55,6 +55,7 @@ add_library(emucore STATIC
     src/soc/nand.c
     src/soc/storage.c
     src/soc/machine.c
+    src/soc/s5l8930.c
     src/soc/device_profile.c
     src/soc/display_profile.c
     src/soc/machine_factory.c
@@ -259,6 +260,20 @@ add_test(NAME device_profile_catalog COMMAND test_device_profile)
 add_executable(test_display_profile tests/test_display_profile.c)
 target_link_libraries(test_display_profile PRIVATE emucore)
 add_test(NAME display_profile_mapping COMMAND test_display_profile)
+
+add_executable(test_s5l8930 tests/test_s5l8930.c)
+target_link_libraries(test_s5l8930 PRIVATE emucore)
+set_target_properties(test_s5l8930 PROPERTIES
+    C_STANDARD 11
+    C_STANDARD_REQUIRED YES
+    C_EXTENSIONS NO)
+if(MSVC)
+    target_compile_options(test_s5l8930 PRIVATE /W4 /WX)
+else()
+    target_compile_options(test_s5l8930 PRIVATE
+        -Wall -Wextra -Werror -pedantic)
+endif()
+add_test(NAME s5l8930_platform_map COMMAND test_s5l8930)
 
 add_executable(test_machine_factory tests/test_machine_factory.c)
 target_link_libraries(test_machine_factory PRIVATE emucore)
