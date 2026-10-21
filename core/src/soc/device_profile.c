@@ -42,6 +42,11 @@ const s5l_device_profile_t *s5l_device_profile_find(const char *identifier)
 
 bool s5l_device_profile_can_boot(const s5l_device_profile_t *profile)
 {
+    /* The implemented bring-up path is specifically S5L8900 + ARMv6.
+     * Checking the CPU as well as the SoC prevents a future profile from
+     * accidentally advertising ARMv7 as bootable just because its SoC field
+     * was copied from the existing iPhone profile. */
     return profile && profile->boot_supported &&
-           profile->soc == S5L_SOC_S5L8900;
+           profile->soc == S5L_SOC_S5L8900 &&
+           profile->cpu == S5L_CPU_ARMV6;
 }
