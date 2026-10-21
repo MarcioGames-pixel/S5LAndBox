@@ -42,6 +42,11 @@ the selection outcomes and invalid initialization arguments.
    Do not silently feed iPod firmware to the S5L8900 core.
 3. **Display/input abstraction** — separate logical touch coordinates from
    physical panel dimensions and keep the existing 320×480 iPhone path unchanged.
+   The first host-side mapping helper is now in `display_profile.h/.c`: it maps
+   an in-bounds logical pixel to the corresponding top-left physical panel pixel
+   using 64-bit intermediate arithmetic. Tests cover 1× iPhone 3G, 2× iPod touch
+   4, and invalid coordinates. This does not change guest CLCD scanout or claim
+   that the A4 display controller is emulated.
 4. **SoC boundary** — isolate machine creation, MMIO map, interrupt controller,
    clocks, RAM layout, and boot-ROM expectations behind a SoC-specific interface.
 5. **S5L8930/A4 implementation** — add the ARMv7 CPU/system-control behavior and
