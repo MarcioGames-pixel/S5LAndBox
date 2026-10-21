@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stddef.h>
+#include <stdint.h>
 
 int main(void)
 {
@@ -30,6 +31,25 @@ int main(void)
            S5L_MACHINE_SELECT_INVALID_ARGUMENT);
     assert(s5l_machine_init_for_device("iPod4,1", NULL, 0x08000000u, 0x08000000u, &profile) == S5L_MACHINE_SELECT_INVALID_ARGUMENT);
     assert(profile == NULL);
+
+    /*
+     * A known-but-unimplemented target must be rejected before touching the
+     * machine object. Sentinel bytes make this an integration test for the
+     * factory's fail-closed behavior, not just a profile lookup test.
+     */
+    static s5l8900_t untouched_machine;
+    memset(&untouched_machine, 0xa5, sizeof untouched_machine);
+    profile = (const s5l_device_profile_t *)1;
+    assert(s5l_machine_init_for_device("iPod4,1", &untouched_machine,
+                                       0x08000000u, 0x08000000u,
+                                       &profile) ==
+           S5L_MACHINE_SELECT_UNIMPLEMENTED_SOC);
+    assert(profile == NULL);
+    const unsigned char *machine_bytes =
+        (const unsigned char *)&untouched_machine;
+    assert(machine_bytes[0] == 0xa5);
+    assert(machine_bytes[sizeof untouched_machine - 1u] == 0xa5);
+
     assert(strcmp(s5l_machine_select_status_name(
                       S5L_MACHINE_SELECT_UNIMPLEMENTED_SOC),
                   "unimplemented-soc") == 0);
