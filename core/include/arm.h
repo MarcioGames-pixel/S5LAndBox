@@ -364,8 +364,9 @@ typedef struct arm_cp15 {
  * arm_cpu_t keeps exactly the behaviour it had before this field existed.
  */
 typedef enum {
-    ARM_ARCH_V6_ARM1176 = 0,  /* S5L8900 / iPhone OS 3 -- the current target */
-    ARM_ARCH_V7_SWIFT   = 1   /* S5L8950X / iPhone 5, ARMv7s -- roadmap P2   */
+    ARM_ARCH_V6_ARM1176 = 0,  /* S5L8900 / iPhone OS 3 -- current target */
+    ARM_ARCH_V7_SWIFT   = 1,  /* S5L8950X / iPhone 5, ARMv7s; value kept stable */
+    ARM_ARCH_V7_CORTEX_A8 = 2 /* S5L8930 / Apple A4, ARMv7-A; separate feature set */
 } arm_arch_t;
 
 /*
