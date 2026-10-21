@@ -29,7 +29,35 @@ int main(void)
     assert(profile == NULL);
     assert(s5l_machine_select_profile("iPhone1,2", NULL) ==
            S5L_MACHINE_SELECT_INVALID_ARGUMENT);
-    assert(s5l_machine_init_for_device("iPod4,1", NULL, 0x08000000u, 0x08000000u, &profile) == S5L_MACHINE_SELECT_INVALID_ARGUMENT);
+
+    /* Restore.plist commonly spells BoardConfig as lower-case n82ap. */
+    profile = NULL;
+    assert(s5l_machine_select_firmware_profile("iPhone1,2", "n82ap",
+                                                &profile) ==
+           S5L_MACHINE_SELECT_OK);
+    assert(profile != NULL && strcmp(profile->board_id, "N82AP") == 0);
+
+    profile = (const s5l_device_profile_t *)1;
+    assert(s5l_machine_select_firmware_profile("iPhone1,2", "N81AP",
+                                                &profile) ==
+           S5L_MACHINE_SELECT_BOARD_MISMATCH);
+    assert(profile == NULL);
+
+    profile = (const s5l_device_profile_t *)1;
+    assert(s5l_machine_select_firmware_profile("iPod4,1", "n81ap",
+                                                &profile) ==
+           S5L_MACHINE_SELECT_UNIMPLEMENTED_SOC);
+    assert(profile == NULL);
+
+    profile = (const s5l_device_profile_t *)1;
+    assert(s5l_machine_select_firmware_profile("iPhone1,2", NULL,
+                                                &profile) ==
+           S5L_MACHINE_SELECT_INVALID_ARGUMENT);
+    assert(profile == NULL);
+
+    assert(s5l_machine_init_for_device("iPod4,1", NULL, 0x08000000u,
+                                       0x08000000u, &profile) ==
+           S5L_MACHINE_SELECT_INVALID_ARGUMENT);
     assert(profile == NULL);
 
     /*
@@ -50,8 +78,22 @@ int main(void)
     assert(machine_bytes[0] == 0xa5);
     assert(machine_bytes[sizeof untouched_machine - 1u] == 0xa5);
 
+    /* A mismatched board must likewise be rejected before initialization. */
+    profile = (const s5l_device_profile_t *)1;
+    assert(s5l_machine_init_for_firmware("iPhone1,2", "n81ap",
+                                         &untouched_machine,
+                                         0x08000000u, 0x08000000u,
+                                         &profile) ==
+           S5L_MACHINE_SELECT_BOARD_MISMATCH);
+    assert(profile == NULL);
+    assert(machine_bytes[0] == 0xa5);
+    assert(machine_bytes[sizeof untouched_machine - 1u] == 0xa5);
+
     assert(strcmp(s5l_machine_select_status_name(
                       S5L_MACHINE_SELECT_UNIMPLEMENTED_SOC),
                   "unimplemented-soc") == 0);
+    assert(strcmp(s5l_machine_select_status_name(
+                      S5L_MACHINE_SELECT_BOARD_MISMATCH),
+                  "board-mismatch") == 0);
     return 0;
 }
