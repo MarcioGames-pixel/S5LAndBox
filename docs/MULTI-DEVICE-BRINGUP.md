@@ -16,7 +16,10 @@ The registry is in `core/include/device_profile.h` and
 `device_identifier`. When supplied, the core resolves it against this registry
 before touching guest memory. Unknown targets and known-but-unimplemented SoCs
 are refused with `device-unsupported`; `iPod4,1` therefore cannot accidentally
-enter the S5L8900/ARMv6 boot path. A null identifier preserves the existing
+enter the S5L8900/ARMv6 boot path. The capability predicate requires both
+S5L8900 and ARMv6, so a profile that accidentally combines S5L8900 with ARMv7
+is rejected too. Regression tests cover the supported iPhone identity, the
+unsupported iPod identity, an unknown identifier, and the mismatched CPU family. A null identifier preserves the existing
 legacy callers while the Android UI is migrated to explicit target selection.
 
 ## Implementation sequence
