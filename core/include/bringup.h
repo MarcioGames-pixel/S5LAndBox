@@ -34,6 +34,7 @@
 #define S5LBOX_BRINGUP_H
 
 #include "macho.h"
+#include "device_profile.h"
 #include "md_bridge.h"
 #include "md_geometry_bridge.h"
 #include "md_raw_bridge.h"
@@ -190,6 +191,7 @@
 typedef enum {
     S5L_BRINGUP_OK = 0,
     S5L_BRINGUP_INVALID_ARGUMENT,
+    S5L_BRINGUP_DEVICE_UNSUPPORTED, /* target has no implemented machine/SoC */
     S5L_BRINGUP_KERNEL_MISSING,        /* no kernel bytes supplied            */
     S5L_BRINGUP_KERNEL_MALFORMED,      /* macho_parse rejected it; see        */
                                        /* result->macho_status               */
@@ -270,6 +272,10 @@ typedef bool (*s5l_bringup_kernel_gate_fn)(void *context,
  * a silently degraded one.
  */
 typedef struct {
+    /* Optional Apple hardware identifier. NULL/empty preserves legacy iPhone1,2 behavior.
+     * A supplied identifier is checked before any guest memory is modified. */
+    const char *device_identifier;
+
     /* The decrypted kernelcache, as a plain 32-bit Mach-O. Borrowed for the
      * duration of the call only; segments are copied into guest DRAM. */
     const uint8_t *kernel;
