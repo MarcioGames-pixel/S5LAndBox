@@ -590,6 +590,21 @@ static void test_refusals(const uint8_t *kernel, size_t kernel_len,
 
     printf("refusals\n");
 
+    /* The S5L8900 bring-up path must refuse the A4-based iPod profile before
+     * touching a machine or requiring firmware. This is the regression guard
+     * that keeps a catalog entry from being mistaken for real SoC support. */
+    memset(&request, 0, sizeof request);
+    request.device_identifier = "iPod4,1";
+    status = s5l_bringup(NULL, &request, NULL, &result);
+    CHECK(status == S5L_BRINGUP_DEVICE_UNSUPPORTED,
+          "iPod4,1 was not refused by the S5L8900 path: %s",
+          s5l_bringup_status_name(status));
+    CHECK(result.stage == S5L_BRINGUP_STAGE_ARGUMENTS,
+          "unsupported target failed at wrong stage: %s",
+          s5l_bringup_stage_name(result.stage));
+    CHECK(strstr(result.detail, "iPod4,1") != NULL,
+          "unsupported target diagnostic omitted the identifier");
+
     /* A missing kernel. */
     CHECK(build_machine(&machine), "s5l8900_init failed");
     memset(&request, 0, sizeof request);
