@@ -56,6 +56,7 @@ add_library(emucore STATIC
     src/soc/storage.c
     src/soc/machine.c
     src/soc/s5l8930.c
+    src/soc/s5l8930_machine.c
     src/soc/device_profile.c
     src/soc/display_profile.c
     src/soc/machine_factory.c
@@ -274,6 +275,10 @@ else()
         -Wall -Wextra -Werror -pedantic)
 endif()
 add_test(NAME s5l8930_platform_map COMMAND test_s5l8930)
+
+add_executable(test_s5l8930_machine tests/test_s5l8930_machine.c)
+target_link_libraries(test_s5l8930_machine PRIVATE emucore)
+add_test(NAME s5l8930_cpu_bus_integration COMMAND test_s5l8930_machine)
 
 add_executable(test_machine_factory tests/test_machine_factory.c)
 target_link_libraries(test_machine_factory PRIVATE emucore)
