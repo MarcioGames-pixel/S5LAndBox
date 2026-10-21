@@ -66,7 +66,7 @@ the selection outcomes and invalid initialization arguments.
 
 ## First S5L8930 platform scaffold
 
-`core/include/s5l8930.h` and `core/src/soc/s5l8930.c` now provide a separate A4 platform-state type, a bounded DRAM window, a provisional boot-ROM window, reset, and address classification. The focused `s5l8930_platform_map` test checks invalid ranges, boundaries, and reset behavior. The address constants are only scaffolding and must be verified against iPod4,1 device-tree/boot-ROM evidence before being treated as authoritative. This module is deliberately not dispatched as a bootable machine yet: it does not emulate A4 MMIO, interrupt delivery, clock/reset control, or boot ROM execution.
+`core/include/s5l8930.h` and `core/src/soc/s5l8930.c` now provide a separate A4 platform-state type and a provisional memory bus: configurable DRAM, an optional read-only boot-ROM image, little-endian 8/16/32-bit accesses, explicit unmapped/no-backing/read-only errors, overflow/bounds checks, and reset. Caller-owned backing buffers are never allocated or freed by the module. The `s5l8930_platform_map` test covers invalid ranges, boundary accesses, endianness, read-only ROM, unmapped access, overflow, and reset. The address constants remain provisional and must be verified against iPod4,1 device-tree/boot-ROM evidence before being treated as authoritative. This module is deliberately not dispatched as a bootable machine yet: it does not emulate A4 MMIO, interrupt delivery, clock/reset control, CPU reset state, or boot ROM execution.
 
 ## Current limitations
 
