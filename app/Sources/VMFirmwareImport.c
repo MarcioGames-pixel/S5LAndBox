@@ -25,6 +25,7 @@
  * Copyright (c) 2026 j0shua-SYSON. MIT licensed.
  */
 #include "VMFirmwareImport.h"
+#include "machine_factory.h"
 
 #include "img3.h"
 #include "lzss.h"
@@ -1177,6 +1178,38 @@ vm_fw_status_t vm_fw_import_run(const vm_fw_import_t *cfg,
         report->status = st;
         snprintf(report->detail, sizeof report->detail, "%s", vm_fw_strerror(st));
         return st;
+    }
+
+    /*
+     * Cross-check the manifest's product and board against the same hardware
+     * registry used by machine creation. This runs before keys are resolved or
+     * payloads are extracted, so a mismatched Restore.plist cannot cause the
+     * importer to prepare firmware for a different board.
+     *
+     * Unknown legacy S5L8900 products still follow the platform gate below;
+     * the registry is intentionally narrower than the historical boot path.
+     */
+    const s5l_device_profile_t *manifest_profile = NULL;
+    s5l_machine_select_status_t identity_status =
+        s5l_machine_select_firmware_profile(report->product_type,
+                                            report->board,
+                                            &manifest_profile);
+    if (identity_status == S5L_MACHINE_SELECT_BOARD_MISMATCH ||
+        identity_status == S5L_MACHINE_SELECT_UNIMPLEMENTED_SOC) {
+        report->status = VM_FW_ERR_UNSUPPORTED_DEVICE;
+        snprintf(report->detail, sizeof report->detail,
+                 "Firmware identity rejected: product %s, board %s (%s).",
+                 report->product_type,
+                 report->board[0] ? report->board : "?",
+                 s5l_machine_select_status_name(identity_status));
+        for (int i = 0; i < VM_FW_ARTEFACT_COUNT; i++) {
+            report->artefacts[i].state = VM_FW_STATE_FAILED;
+            report->artefacts[i].reason = VM_FW_ERR_UNSUPPORTED_DEVICE;
+            set_detail(report->artefacts[i].detail,
+                       sizeof report->artefacts[i].detail,
+                       "Not attempted: the manifest hardware identity was rejected.");
+        }
+        return report->status;
     }
 
     /*
