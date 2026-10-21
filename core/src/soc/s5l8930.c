@@ -81,9 +81,9 @@ resolve_access(const s5l8930_t *soc, uint32_t address, size_t width,
         return S5L8930_ACCESS_INVALID_ARGUMENT;
 
     const s5l8930_region_t region = s5l8930_region_at(soc, address);
-    if (region == S5L8930_REGION_UNMAPPED ||
-        s5l8930_region_at(soc, address + (uint32_t)(width - 1u)) != region ||
-        (uint64_t)address + width - 1u > UINT32_MAX)
+    if ((uint64_t)address + width - 1u > UINT32_MAX ||
+        region == S5L8930_REGION_UNMAPPED ||
+        s5l8930_region_at(soc, address + (uint32_t)(width - 1u)) != region)
         return S5L8930_ACCESS_UNMAPPED;
 
     if (region == S5L8930_REGION_BOOTROM) {
