@@ -7,7 +7,9 @@ name: android-build
 # The app's native library compiles a set of files out of tools/ (rootfs
 # provisioning, the file-block device, payload extraction, SHA-256 and the
 # iOS 3 host shims, see android/app/src/main/cpp/CMakeLists.txt), so a change
-# there changes the APK and has to run this job.
+# there changes the APK and has to run this job. Core/app shared-source changes
+# are validated by core-tests and iOS CI; build the APK on demand with
+# workflow_dispatch so interpreter work does not repeatedly package the app.
 on:
   push:
     branches:
@@ -15,8 +17,6 @@ on:
       - main
     paths:
       - 'android/**'
-      - 'core/**'
-      - 'app/Sources/**'
       - 'tools/**'
       - 'CMakeLists.txt'
       - '.github/workflows/android-build.yml'
