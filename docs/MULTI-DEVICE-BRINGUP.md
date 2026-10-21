@@ -64,6 +64,10 @@ the selection outcomes and invalid initialization arguments.
    a captured boot-to-SpringBoard test using legally obtained firmware supplied
    outside the repository.
 
+## First S5L8930 platform scaffold
+
+`core/include/s5l8930.h` and `core/src/soc/s5l8930.c` now provide a separate A4 platform-state type, a bounded DRAM window, a provisional boot-ROM window, reset, and address classification. The focused `s5l8930_platform_map` test checks invalid ranges, boundaries, and reset behavior. The address constants are only scaffolding and must be verified against iPod4,1 device-tree/boot-ROM evidence before being treated as authoritative. This module is deliberately not dispatched as a bootable machine yet: it does not emulate A4 MMIO, interrupt delivery, clock/reset control, or boot ROM execution.
+
 ## Current limitations
 
 - This change does not add S5L8930 emulation, ARMv7 boot support, or a working
