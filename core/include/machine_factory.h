@@ -12,6 +12,7 @@
 
 #include "soc.h"
 #include "device_profile.h"
+#include "s5l8930.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,6 +48,20 @@ s5l_machine_select_firmware_profile(const char *identifier,
                                     const s5l_device_profile_t **out_profile);
 
 const char *s5l_machine_select_status_name(s5l_machine_select_status_t status);
+
+/* Initialize only the experimental S5L8930 platform scaffold. This does not
+ * make the target bootable and must not be used as a substitute for a complete
+ * machine backend. The returned profile is descriptive, not boot approval. */
+s5l_machine_select_status_t
+s5l_machine_init_s5l8930_scaffold_for_device(
+    const char *identifier, s5l8930_t *soc, uint32_t dram_base,
+    uint32_t dram_size, const s5l_device_profile_t **out_profile);
+
+s5l_machine_select_status_t
+s5l_machine_init_s5l8930_scaffold_for_firmware(
+    const char *identifier, const char *board_id, s5l8930_t *soc,
+    uint32_t dram_base, uint32_t dram_size,
+    const s5l_device_profile_t **out_profile);
 
 /* Resolve the identifier and initialize its implemented machine backend.
  * The output profile is optional; on any failure it is set to NULL. */
