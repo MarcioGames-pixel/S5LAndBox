@@ -12,15 +12,18 @@ S5L8900 model, and firmware import/boot policy is tailored to iPhone1,2.
 | `iPod4,1` | `N81AP` | Apple A4 / S5L8930 | ARMv7 | 320×480 | 640×960 | Not implemented |
 
 The registry is in `core/include/device_profile.h` and
-`core/src/soc/device_profile.c`. It is descriptive metadata only. The
-`boot_supported` flag is intentionally false for iPod4,1, and the helper also
-checks the SoC family to avoid accidentally treating a catalog entry as an
-implemented machine.
+`core/src/soc/device_profile.c`. The bring-up request now accepts an optional
+`device_identifier`. When supplied, the core resolves it against this registry
+before touching guest memory. Unknown targets and known-but-unimplemented SoCs
+are refused with `device-unsupported`; `iPod4,1` therefore cannot accidentally
+enter the S5L8900/ARMv6 boot path. A null identifier preserves the existing
+legacy callers while the Android UI is migrated to explicit target selection.
 
 ## Implementation sequence
 
-1. **Profile registry and tests** — landed in this starter change. Preserve the
-   existing iPhone1,2 behavior.
+1. **Profile registry and boot guard** — catalog the targets and reject an
+   explicitly selected unsupported SoC before guest memory is modified. The
+   iPhone1,2 path remains the legacy default until the frontend passes an ID.
 2. **Firmware-aware machine selection** — detect the product/board identity
    from a user-imported IPSW manifest and reject mismatches with a clear error.
    Do not silently feed iPod firmware to the S5L8900 core.
@@ -39,7 +42,8 @@ implemented machine.
 ## Current limitations
 
 - This change does not add S5L8930 emulation, ARMv7 boot support, or a working
-  iPod4,1 firmware importer.
+  iPod4,1 firmware importer. The boot guard is a safety check, not a substitute
+  for implementing the A4 machine.
 - It does not change the current emulator engine or UI selection flow.
 - A successful build or profile lookup is not evidence of an iPod boot.
 - No Apple firmware, keys, or copyrighted system files are added to the repo.
