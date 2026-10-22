@@ -65,9 +65,6 @@ bool s5l8930_init(s5l8930_t *soc, uint32_t dram_base, uint32_t dram_size);
 void s5l8930_reset(s5l8930_t *soc);
 s5l8930_region_t s5l8930_region_at(const s5l8930_t *soc, uint32_t address);
 
-/* Attach caller-owned backing buffers. No memory is allocated or freed here.
- * DRAM backing must cover the entire configured DRAM range. A boot-ROM image
- * may be shorter than its aperture; accesses beyond its supplied size fail. */
 /* Register an MMIO window with device-supplied read/write callbacks. The
  * window must not overlap DRAM, the provisional boot-ROM aperture, or another
  * MMIO window. No real A4 addresses are assumed by this generic mechanism. */
@@ -76,6 +73,9 @@ s5l8930_mmio_register(s5l8930_t *soc, uint32_t base, uint32_t size,
                       void *context, s5l8930_mmio_read_fn read,
                       s5l8930_mmio_write_fn write);
 
+/* Attach caller-owned backing buffers. No memory is allocated or freed here.
+ * DRAM backing must cover the entire configured DRAM range. A boot-ROM image
+ * may be shorter than its aperture; accesses beyond its supplied size fail. */
 s5l8930_access_status_t
 s5l8930_attach_memory(s5l8930_t *soc, uint8_t *dram, size_t dram_size,
                       const uint8_t *bootrom, size_t bootrom_size);
