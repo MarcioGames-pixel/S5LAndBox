@@ -590,6 +590,42 @@ static void test_refusals(const uint8_t *kernel, size_t kernel_len,
 
     printf("refusals\n");
 
+    /* The S5L8900 bring-up path must refuse the A4-based iPod profile before
+     * touching a machine or requiring firmware. This is the regression guard
+     * that keeps a catalog entry from being mistaken for real SoC support. */
+    memset(&request, 0, sizeof request);
+    request.device_identifier = "iPod4,1";
+    status = s5l_bringup(NULL, &request, NULL, &result);
+    CHECK(status == S5L_BRINGUP_DEVICE_UNSUPPORTED,
+          "iPod4,1 was not refused by the S5L8900 path: %s",
+          s5l_bringup_status_name(status));
+    CHECK(result.stage == S5L_BRINGUP_STAGE_ARGUMENTS,
+          "unsupported target failed at wrong stage: %s",
+          s5l_bringup_stage_name(result.stage));
+    CHECK(strstr(result.detail, "iPod4,1") != NULL,
+          "unsupported target diagnostic omitted the identifier");
+
+    /* Unknown identifiers must also fail closed, not silently select the
+     * legacy iPhone path. */
+    memset(&request, 0, sizeof request);
+    request.device_identifier = "iPhone99,9";
+    status = s5l_bringup(NULL, &request, NULL, &result);
+    CHECK(status == S5L_BRINGUP_DEVICE_UNSUPPORTED,
+          "unknown target was not refused: %s", s5l_bringup_status_name(status));
+    CHECK(strstr(result.detail, "iPhone99,9") != NULL,
+          "unknown-target diagnostic omitted the identifier");
+
+    /* Conversely, an explicit iPhone 3G identity is recognized and proceeds
+     * to ordinary machine validation; it must not be rejected as unsupported. */
+    memset(&request, 0, sizeof request);
+    request.device_identifier = "iPhone1,2";
+    status = s5l_bringup(NULL, &request, NULL, &result);
+    CHECK(status == S5L_BRINGUP_INVALID_ARGUMENT,
+          "supported iPhone1,2 was rejected before machine validation: %s",
+          s5l_bringup_status_name(status));
+    CHECK(result.stage == S5L_BRINGUP_STAGE_ARGUMENTS,
+          "supported-target validation reached an unexpected stage");
+
     /* A missing kernel. */
     CHECK(build_machine(&machine), "s5l8900_init failed");
     memset(&request, 0, sizeof request);

@@ -30,6 +30,7 @@
 #include <unistd.h>
 
 #include "soc.h"
+#include "machine_factory.h"
 #include "usb_host.h"
 
 #include "VMButtonQueue.h"
@@ -65,6 +66,31 @@
 #define ENGINE_IMPORT_REPORT_CAP 4096u
 #define ENGINE_AUDIO_SCRATCH 1024u
 #define ENGINE_COW_HEADER_BYTES 28u
+
+/*
+ * The Android frontend currently exposes the iPhone 3G firmware path only.
+ * Route every machine allocation through the same explicit hardware registry
+ * used by bring-up, rather than calling the S5L8900 constructor directly.
+ * Adding another selectable device now requires a real backend and a profile
+ * that passes s5l_device_profile_can_boot().
+ */
+static bool engine_init_selected_machine(s5l8900_t *machine)
+{
+    const s5l_device_profile_t *profile = NULL;
+    s5l_machine_select_status_t status =
+        s5l_machine_init_for_device("iPhone1,2", machine,
+                                    VM_GUEST_RAM_BASE, VM_GUEST_RAM_SIZE,
+                                    &profile);
+    if (status != S5L_MACHINE_SELECT_OK) {
+        ENGINE_WARN("Machine selection/init failed: %s",
+                    s5l_machine_select_status_name(status));
+        return false;
+    }
+    ENGINE_LOG("Selected %s (%s, %s)",
+               profile->marketing_name, profile->identifier,
+               profile->soc_name);
+    return true;
+}
 
 enum {
     PHASE_IDLE = 0,
@@ -1695,7 +1721,7 @@ static bool install_payload(engine_t *e, s5l8900_t *machine,
             vm_firmware_boot_destroy(&boot);
             s5l8900_free(machine);
             memset(machine, 0, sizeof *machine);
-            if (!s5l8900_init(machine, VM_GUEST_RAM_BASE, VM_GUEST_RAM_SIZE))
+            if (!engine_init_selected_machine(machine))
                 return false;
         } else {
             pthread_mutex_lock(&e->lock);
@@ -2043,7 +2069,7 @@ static void engine_thread_main(engine_t *e)
         pthread_mutex_unlock(&e->lock);
         return;
     }
-    if (!s5l8900_init(machine, VM_GUEST_RAM_BASE, VM_GUEST_RAM_SIZE)) {
+    if (!engine_init_selected_machine(machine)) {
         free(machine);
         pthread_mutex_lock(&e->lock);
         snprintf(e->note, sizeof e->note,

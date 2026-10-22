@@ -55,6 +55,11 @@ add_library(emucore STATIC
     src/soc/nand.c
     src/soc/storage.c
     src/soc/machine.c
+    src/soc/s5l8930.c
+    src/soc/s5l8930_machine.c
+    src/soc/device_profile.c
+    src/soc/display_profile.c
+    src/soc/machine_factory.c
     src/firmware/img3.c
     src/firmware/aes.c
     src/firmware/loader.c
@@ -246,6 +251,38 @@ add_test(NAME vfp COMMAND test_vfp)
 add_executable(test_soc tests/test_soc.c)
 target_link_libraries(test_soc PRIVATE emucore)
 add_test(NAME s5l8900_machine COMMAND test_soc)
+
+# Device identity catalog is metadata only; it must never imply that an SoC boots.
+add_executable(test_device_profile tests/test_device_profile.c)
+target_link_libraries(test_device_profile PRIVATE emucore)
+add_test(NAME device_profile_catalog COMMAND test_device_profile)
+
+# Logical guest pixels map to physical panel pixels without changing guest scanout.
+add_executable(test_display_profile tests/test_display_profile.c)
+target_link_libraries(test_display_profile PRIVATE emucore)
+add_test(NAME display_profile_mapping COMMAND test_display_profile)
+
+add_executable(test_s5l8930 tests/test_s5l8930.c)
+target_link_libraries(test_s5l8930 PRIVATE emucore)
+set_target_properties(test_s5l8930 PROPERTIES
+    C_STANDARD 11
+    C_STANDARD_REQUIRED YES
+    C_EXTENSIONS NO)
+if(MSVC)
+    target_compile_options(test_s5l8930 PRIVATE /W4 /WX)
+else()
+    target_compile_options(test_s5l8930 PRIVATE
+        -Wall -Wextra -Werror -pedantic)
+endif()
+add_test(NAME s5l8930_platform_map COMMAND test_s5l8930)
+
+add_executable(test_s5l8930_machine tests/test_s5l8930_machine.c)
+target_link_libraries(test_s5l8930_machine PRIVATE emucore)
+add_test(NAME s5l8930_cpu_bus_integration COMMAND test_s5l8930_machine)
+
+add_executable(test_machine_factory tests/test_machine_factory.c)
+target_link_libraries(test_machine_factory PRIVATE emucore)
+add_test(NAME machine_factory_dispatch COMMAND test_machine_factory)
 
 add_executable(test_usbotg tests/test_usbotg.c)
 target_link_libraries(test_usbotg PRIVATE emucore)
