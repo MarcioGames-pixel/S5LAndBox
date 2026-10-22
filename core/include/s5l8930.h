@@ -19,6 +19,7 @@ extern "C" {
 #define S5L8930_DRAM_DEFAULT   0x10000000u
 #define S5L8930_BOOTROM_BASE   0x00000000u
 #define S5L8930_BOOTROM_SIZE   0x00010000u
+#define S5L8930_MMIO_MAX_REGIONS 16u
 
 typedef enum {
     S5L8930_REGION_UNMAPPED = 0,
@@ -34,6 +35,20 @@ typedef enum {
     S5L8930_ACCESS_NO_BACKING
 } s5l8930_access_status_t;
 
+typedef s5l8930_access_status_t (*s5l8930_mmio_read_fn)(
+    void *context, uint32_t offset, unsigned width, uint32_t *value);
+typedef s5l8930_access_status_t (*s5l8930_mmio_write_fn)(
+    void *context, uint32_t offset, unsigned width, uint32_t value);
+
+typedef struct {
+    uint32_t base;
+    uint32_t size;
+    void *context;
+    s5l8930_mmio_read_fn read;
+    s5l8930_mmio_write_fn write;
+    bool used;
+} s5l8930_mmio_region_t;
+
 typedef struct {
     uint32_t dram_base;
     uint32_t dram_size;
@@ -41,6 +56,7 @@ typedef struct {
     size_t dram_backing_size;
     const uint8_t *bootrom;
     size_t bootrom_backing_size;
+    s5l8930_mmio_region_t mmio[S5L8930_MMIO_MAX_REGIONS];
     bool initialized;
 } s5l8930_t;
 
@@ -52,6 +68,14 @@ s5l8930_region_t s5l8930_region_at(const s5l8930_t *soc, uint32_t address);
 /* Attach caller-owned backing buffers. No memory is allocated or freed here.
  * DRAM backing must cover the entire configured DRAM range. A boot-ROM image
  * may be shorter than its aperture; accesses beyond its supplied size fail. */
+/* Register an MMIO window with device-supplied read/write callbacks. The
+ * window must not overlap DRAM, the provisional boot-ROM aperture, or another
+ * MMIO window. No real A4 addresses are assumed by this generic mechanism. */
+s5l8930_access_status_t
+s5l8930_mmio_register(s5l8930_t *soc, uint32_t base, uint32_t size,
+                      void *context, s5l8930_mmio_read_fn read,
+                      s5l8930_mmio_write_fn write);
+
 s5l8930_access_status_t
 s5l8930_attach_memory(s5l8930_t *soc, uint8_t *dram, size_t dram_size,
                       const uint8_t *bootrom, size_t bootrom_size);
