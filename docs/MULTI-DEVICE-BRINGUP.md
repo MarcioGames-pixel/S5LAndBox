@@ -105,3 +105,19 @@ The S5L8930 machine integration test now also places a single ARM instruction
 and executes it through the machine bus. This validates the basic CPU-to-ROM
 path only; it does not validate real A4 reset vectors, privileged startup state,
 MMIO, or iOS boot.
+
+
+### Generic S5L8930 MMIO dispatch seam
+
+The S5L8930 bus now accepts up to `S5L8930_MMIO_MAX_REGIONS` callback-backed
+MMIO windows. Registration rejects zero-sized/overflowing ranges and overlaps
+with DRAM, the provisional ROM aperture, or other MMIO windows. Reads/writes
+are dispatched by width to the registered device callback, which can implement
+register-specific masks, reset values, and side effects. Unit tests use a
+synthetic address only to verify registration, overlap rejection, and callback
+dispatch; that test address is not claimed to be an Apple A4 register address.
+The next hardware step is to populate this mechanism only with ranges verified
+from an iPod4,1 DeviceTree/firmware dump. Public references identify iPod4,1 as
+board n81ap, CPID 0x8930, and the A4/S5L8930 boot chain as BootROM -> LLB ->
+iBoot -> kernel, but they do not replace parsing the target firmware's actual
+device-tree ranges.
